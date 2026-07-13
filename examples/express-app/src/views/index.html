@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>express-2fa-kit example</title>
+</head>
+<body>
+  <h1>express-2fa-kit example</h1>
+  <p>This is a minimal demo app. SMS/email codes are logged to the server console (mock delivery).</p>
+
+  <h2>Register</h2>
+  <form id="registerForm">
+    <input name="username" placeholder="username" required />
+    <input name="password" type="password" placeholder="password" required />
+    <button type="submit">Register</button>
+  </form>
+
+  <h2>Login</h2>
+  <form id="loginForm">
+    <input name="username" placeholder="username" required />
+    <input name="password" type="password" placeholder="password" required />
+    <button type="submit">Login</button>
+  </form>
+
+  <p id="status"></p>
+  <p><a href="/enroll.html">Set up 2FA</a> | <a href="/dashboard.html">Dashboard</a></p>
+
+  <script src="/app.js"></script>
+  <script>
+    document.getElementById("registerForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const form = new FormData(e.target);
+      const { status, data } = await postJson("/auth/register", {
+        username: form.get("username"),
+        password: form.get("password"),
+      });
+      document.getElementById("status").textContent =
+        status === 200 ? "Registered and logged in as " + data.user.username : "Error: " + data.error;
+    });
+
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const form = new FormData(e.target);
+      const { status, data } = await postJson("/auth/login", {
+        username: form.get("username"),
+        password: form.get("password"),
+      });
+      document.getElementById("status").textContent =
+        status === 200 ? "Logged in as " + data.user.username : "Error: " + data.error;
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Set up 2FA</title>
+</head>
+<body>
+  <h1>Set up two-factor authentication</h1>
+  <p><a href="/">Home</a> | <a href="/dashboard.html">Dashboard</a></p>
+  <p id="statusLine"></p>
+
+  <section>
+    <h2>Authenticator app (TOTP)</h2>
+    <button id="totpEnrollBtn">Start TOTP enrollment</button>
+    <div id="totpQr"></div>
+    <form id="totpConfirmForm" style="display: none">
+      <input name="code" placeholder="6-digit code" required />
+      <button type="submit">Confirm</button>
+    </form>
+  </section>
+
+  <section>
+    <h2>SMS</h2>
+    <form id="smsEnrollForm">
+      <input name="phoneNumber" placeholder="+15551234567" required />
+      <button type="submit">Register phone</button>
+    </form>
+    <button id="smsSendBtn" style="display: none">Send code</button>
+    <form id="smsVerifyForm" style="display: none">
+      <input name="code" placeholder="6-digit code" required />
+      <button type="submit">Verify</button>
+    </form>
+  </section>
+
+  <section>
+    <h2>Email</h2>
+    <form id="emailEnrollForm">
+      <input name="emailAddress" placeholder="you@example.com" required />
+      <button type="submit">Register email</button>
+    </form>
+    <button id="emailSendBtn" style="display: none">Send code</button>
+    <form id="emailVerifyForm" style="display: none">
+      <input name="code" placeholder="6-digit code" required />
+      <button type="submit">Verify</button>
+    </form>
+  </section>
+
+  <p><em>SMS/email codes are logged to the server console — no real messages are sent by this example.</em></p>
+
+  <script src="/app.js"></script>
+  <script>
+    async function refreshStatus() {
+      const { status, data } = await getJson("/2fa/status");
+      document.getElementById("statusLine").textContent =
+        status === 200
+          ? "Enabled methods: " + (data.methods.length ? data.methods.join(", ") : "none")
+          : "Not logged in — go to Home and log in first.";
+    }
+    refreshStatus();
+
+    document.getElementById("totpEnrollBtn").addEventListener("click", async () => {
+      const { status, data } = await postJson("/2fa/totp/enroll", {});
+      if (status !== 200) {
+        alert("Error: " + data.error);
+        return;
+      }
+      document.getElementById("totpQr").innerHTML = `<img src="${data.qrCodeDataUrl}" alt="TOTP QR code" />`;
+      document.getElementById("totpConfirmForm").style.display = "block";
+    });
+
+    document.getElementById("totpConfirmForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const code = new FormData(e.target).get("code");
+      const { data } = await postJson("/2fa/totp/confirm", { code });
+      alert(data.valid ? "TOTP confirmed!" : "Invalid code");
+      refreshStatus();
+    });
+
+    document.getElementById("smsEnrollForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const phoneNumber = new FormData(e.target).get("phoneNumber");
+      const { status, data } = await postJson("/2fa/sms/enroll", { phoneNumber });
+      if (status === 200) {
+        document.getElementById("smsSendBtn").style.display = "inline";
+      } else {
+        alert("Error: " + data.error);
+      }
+    });
+
+    document.getElementById("smsSendBtn").addEventListener("click", async () => {
+      const { status, data } = await postJson("/2fa/sms/send", {});
+      if (status !== 200) {
+        alert("Error: " + data.error);
+        return;
+      }
+      document.getElementById("smsVerifyForm").style.display = "block";
+      alert("Code sent — check the server console.");
+    });
+
+    document.getElementById("smsVerifyForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const code = new FormData(e.target).get("code");
+      const { data } = await postJson("/2fa/verify", { method: "sms", code });
+      alert(data.valid ? "SMS verified!" : "Invalid code: " + data.reason);
+      refreshStatus();
+    });
+
+    document.getElementById("emailEnrollForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const emailAddress = new FormData(e.target).get("emailAddress");
+      const { status, data } = await postJson("/2fa/email/enroll", { emailAddress });
+      if (status === 200) {
+        document.getElementById("emailSendBtn").style.display = "inline";
+      } else {
+        alert("Error: " + data.error);
+      }
+    });
+
+    document.getElementById("emailSendBtn").addEventListener("click", async () => {
+      const { status, data } = await postJson("/2fa/email/send", {});
+      if (status !== 200) {
+        alert("Error: " + data.error);
+        return;
+      }
+      document.getElementById("emailVerifyForm").style.display = "block";
+      alert("Code sent — check the server console.");
+    });
+
+    document.getElementById("emailVerifyForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const code = new FormData(e.target).get("code");
+      const { data } = await postJson("/2fa/verify", { method: "email", code });
+      alert(data.valid ? "Email verified!" : "Invalid code: " + data.reason);
+      refreshStatus();
+    });
+  </script>
+</body>
+</html>

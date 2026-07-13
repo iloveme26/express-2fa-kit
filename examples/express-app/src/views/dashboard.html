@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Dashboard</title>
+</head>
+<body>
+  <h1>Dashboard</h1>
+  <p><a href="/">Home</a> | <a href="/enroll.html">Manage 2FA</a></p>
+  <p id="result">Loading...</p>
+
+  <div id="disablePanel" style="display: none">
+    <h2>Disable a method</h2>
+    <button data-method="totp">Disable TOTP</button>
+    <button data-method="sms">Disable SMS</button>
+    <button data-method="email">Disable Email</button>
+  </div>
+
+  <button id="logoutBtn">Log out</button>
+
+  <script src="/app.js"></script>
+  <script>
+    (async () => {
+      const { status, data } = await getJson("/dashboard");
+      const result = document.getElementById("result");
+      if (status === 200) {
+        result.textContent = data.message;
+        document.getElementById("disablePanel").style.display = "block";
+      } else {
+        result.textContent = "Access denied (" + status + "): " + data.error + ". Verify a 2FA code first.";
+      }
+    })();
+
+    document.querySelectorAll("#disablePanel button").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const method = btn.getAttribute("data-method");
+        const { status, data } = await postJson("/2fa/disable", { method });
+        alert(status === 200 ? method + " disabled." : "Error: " + data.error);
+      });
+    });
+
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+      await postJson("/auth/logout", {});
+      window.location.href = "/";
+    });
+  </script>
+</body>
+</html>

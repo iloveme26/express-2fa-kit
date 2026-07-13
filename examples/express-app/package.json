@@ -1,0 +1,14 @@
+{
+  "name": "express-2fa-kit-example",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Example Express app demonstrating express-2fa-kit",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "express-2fa-kit": "file:../.."
+  }
+}
