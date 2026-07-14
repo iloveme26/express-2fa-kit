@@ -380,6 +380,10 @@ form.form-stacked button {
 
 input {
   flex: 1 1 160px;
+  /* Flex items default to min-width: auto, which stops them shrinking below their
+     content size and causes overflow (clipped by body's overflow-x: hidden) at
+     intermediate widths, before the mobile breakpoint forces width: 100%. */
+  min-width: 0;
   min-height: 46px;
   padding: 0 var(--space-4);
   font-size: 0.95rem;
@@ -440,6 +444,14 @@ button:active {
 button:focus-visible {
   outline: 2px solid var(--accent-from);
   outline-offset: 2px;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+  filter: none !important;
 }
 
 /* Anchor-as-button (landing page CTAs) — same visual language as <button>, without
@@ -587,6 +599,11 @@ button.large {
   gap: var(--space-2);
   font-weight: 600;
   font-size: 0.92rem;
+  min-width: 0;
+}
+
+.method-row {
+  min-width: 0;
 }
 
 .method-row-dot {

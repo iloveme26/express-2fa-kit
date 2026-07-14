@@ -81,6 +81,23 @@
       el.classList.toggle("status-error", !ok);
     }
 
+    /** Disables `button` and counts down "Resend in Ns" for `seconds`, then restores it. */
+    function startResendCooldown(button, seconds) {
+      let remaining = seconds;
+      button.disabled = true;
+      button.textContent = `Resend in ${remaining}s`;
+      const interval = setInterval(() => {
+        remaining--;
+        if (remaining <= 0) {
+          clearInterval(interval);
+          button.disabled = false;
+          button.textContent = "Send code";
+        } else {
+          button.textContent = `Resend in ${remaining}s`;
+        }
+      }, 1000);
+    }
+
     (async () => {
       if (await requireAuthOrRedirect()) {
         refreshStatus();
@@ -130,14 +147,18 @@
       }
     });
 
-    document.getElementById("smsSendBtn").addEventListener("click", async () => {
+    document.getElementById("smsSendBtn").addEventListener("click", async (e) => {
+      const btn = e.currentTarget;
+      btn.disabled = true;
       const { status, data } = await postJson("/2fa/sms/send", {});
       if (status !== 200) {
+        btn.disabled = false;
         setResult("smsResult", "Error: " + data.error, false);
         return;
       }
       document.getElementById("smsVerifyForm").classList.remove("hidden");
       setResult("smsResult", "Code sent — check the server console.", true);
+      startResendCooldown(btn, 60);
     });
 
     document.getElementById("smsVerifyForm").addEventListener("submit", async (e) => {
@@ -165,14 +186,18 @@
       }
     });
 
-    document.getElementById("emailSendBtn").addEventListener("click", async () => {
+    document.getElementById("emailSendBtn").addEventListener("click", async (e) => {
+      const btn = e.currentTarget;
+      btn.disabled = true;
       const { status, data } = await postJson("/2fa/email/send", {});
       if (status !== 200) {
+        btn.disabled = false;
         setResult("emailResult", "Error: " + data.error, false);
         return;
       }
       document.getElementById("emailVerifyForm").classList.remove("hidden");
       setResult("emailResult", "Code sent — check the server console.", true);
+      startResendCooldown(btn, 60);
     });
 
     document.getElementById("emailVerifyForm").addEventListener("submit", async (e) => {
