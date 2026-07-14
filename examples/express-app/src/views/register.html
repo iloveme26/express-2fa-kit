@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sign up — express-2fa-kit example</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <a class="back-home" href="/">
+    <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16" aria-hidden="true">
+      <path fill-rule="evenodd" clip-rule="evenodd"
+        d="M17 10a.75.75 0 0 1-.75.75H5.612l4.158 3.96a.75.75 0 1 1-1.04 1.08l-5.5-5.25a.75.75 0 0 1 0-1.08l5.5-5.25a.75.75 0 1 1 1.04 1.08L5.612 9.25H16.25A.75.75 0 0 1 17 10Z" />
+    </svg>
+    Home
+  </a>
+  <div class="page page-center">
+    <div class="card card-narrow">
+      <h2>Sign up</h2>
+      <p class="hint section-gap">
+        Create a demo account to try TOTP/SMS/email 2FA — nothing here is stored beyond this session.
+      </p>
+      <form id="registerForm" class="form-stacked">
+        <input name="username" placeholder="username" required />
+        <div class="password-field">
+          <input name="password" type="password" placeholder="password" required id="passwordInput" />
+          <button type="button" class="password-toggle" data-target="passwordInput" aria-label="Show password">
+            <svg class="icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+              <path d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+              <path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+            </svg>
+            <svg class="icon-eye-off hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+              <path d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12c1.292 4.183 5.22 7.5 10.06 7.5.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0 1 12 4.5c4.838 0 8.766 3.317 10.06 7.5a10.523 10.523 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
+            </svg>
+          </button>
+        </div>
+        <div class="password-meter hidden" id="passwordMeter">
+          <div class="password-meter-track">
+            <div class="password-meter-bar" id="passwordMeterBar"></div>
+          </div>
+          <span class="password-meter-label" id="passwordMeterLabel"></span>
+        </div>
+        <div class="password-field">
+          <input name="confirmPassword" type="password" placeholder="confirm password" required id="confirmPasswordInput" />
+          <button type="button" class="password-toggle" data-target="confirmPasswordInput" aria-label="Show password">
+            <svg class="icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+              <path d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+              <path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+            </svg>
+            <svg class="icon-eye-off hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+              <path d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12c1.292 4.183 5.22 7.5 10.06 7.5.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0 1 12 4.5c4.838 0 8.766 3.317 10.06 7.5a10.523 10.523 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
+            </svg>
+          </button>
+        </div>
+        <button type="submit">Sign up</button>
+      </form>
+      <p id="status" class="status-line"></p>
+      <p class="card-footer">Already have an account? <a href="/login.html">Log in</a></p>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+  <script>
+    function scorePassword(pw) {
+      let score = 0;
+      if (pw.length >= 8) score++;
+      if (pw.length >= 12) score++;
+      if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) score++;
+      if (/\d/.test(pw)) score++;
+      if (/[^A-Za-z0-9]/.test(pw)) score++;
+      return score;
+    }
+
+    const STRENGTH_LEVELS = [
+      { maxScore: 1, name: "weak", label: "Weak", width: "20%" },
+      { maxScore: 2, name: "fair", label: "Fair", width: "45%" },
+      { maxScore: 3, name: "good", label: "Good", width: "70%" },
+      { maxScore: 5, name: "strong", label: "Strong", width: "100%" },
+    ];
+
+    const meterEl = document.getElementById("passwordMeter");
+    const barEl = document.getElementById("passwordMeterBar");
+    const labelEl = document.getElementById("passwordMeterLabel");
+
+    document.querySelector('#registerForm input[name="password"]').addEventListener("input", (e) => {
+      const pw = e.target.value;
+      if (!pw) {
+        meterEl.classList.add("hidden");
+        return;
+      }
+      meterEl.classList.remove("hidden");
+      const level = STRENGTH_LEVELS.find((l) => scorePassword(pw) <= l.maxScore);
+      barEl.style.width = level.width;
+      barEl.className = "password-meter-bar " + level.name;
+      labelEl.className = "password-meter-label " + level.name;
+      labelEl.textContent = level.label;
+    });
+
+    document.getElementById("registerForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const form = new FormData(e.target);
+      const el = document.getElementById("status");
+
+      if (form.get("password") !== form.get("confirmPassword")) {
+        el.textContent = "Passwords don't match.";
+        el.classList.remove("status-success");
+        el.classList.add("status-error");
+        return;
+      }
+
+      const { status, data } = await postJson("/auth/register", {
+        username: form.get("username"),
+        password: form.get("password"),
+      });
+      if (status === 200) {
+        el.textContent = "Registered as " + data.user.username + " — redirecting…";
+        el.classList.add("status-success");
+        window.location.href = "/enroll.html";
+      } else {
+        el.textContent = "Error: " + data.error;
+        el.classList.add("status-error");
+      }
+    });
+  </script>
+</body>
+</html>

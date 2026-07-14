@@ -18,8 +18,9 @@ Then open http://localhost:3000.
 
 ## Try the flow
 
-1. **Register** a user on the home page (this logs you in).
-2. Go to **Set up 2FA** and enroll TOTP (scan the QR with an authenticator app, or compute a
+1. From the home page, click **Sign up** to register a user (this logs you in and takes you to
+   **Set up 2FA**), or **Log in** if you already have one.
+2. On **Set up 2FA**, enroll TOTP (scan the QR with an authenticator app, or compute a
    code from the shown secret), and/or register a phone number / email for SMS/email OTP.
    For SMS/email, click **Send code** and check the terminal running the server — the code is
    logged there instead of being sent anywhere.

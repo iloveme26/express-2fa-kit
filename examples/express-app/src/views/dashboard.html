@@ -2,42 +2,92 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Dashboard</title>
+  <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-  <h1>Dashboard</h1>
-  <p><a href="/">Home</a> | <a href="/enroll.html">Manage 2FA</a></p>
-  <p id="result">Loading...</p>
+  <div class="page">
+    <div class="page-header">
+      <div class="logo-mark pop">express</div>
+      <h1>Dashboard</h1>
+      <div class="nav-links">
+        <a class="nav-pill" href="/enroll.html">Manage 2FA</a>
+        <button class="nav-pill" id="logoutBtn" type="button">Log out</button>
+      </div>
+    </div>
 
-  <div id="disablePanel" style="display: none">
-    <h2>Disable a method</h2>
-    <button data-method="totp">Disable TOTP</button>
-    <button data-method="sms">Disable SMS</button>
-    <button data-method="email">Disable Email</button>
+    <div class="card">
+      <p id="result" class="status-line">Loading...</p>
+    </div>
+
+    <div id="methodsPanel" class="card hidden">
+      <h2>Your 2FA methods</h2>
+      <div id="methodsList"></div>
+      <p id="methodsEmpty" class="hint hidden">No methods enrolled yet — head to Manage 2FA to add one.</p>
+    </div>
   </div>
-
-  <button id="logoutBtn">Log out</button>
 
   <script src="/app.js"></script>
   <script>
+    const METHOD_LABELS = { totp: "Authenticator app (TOTP)", sms: "SMS", email: "Email" };
+
+    function renderMethodRow(method) {
+      const row = document.createElement("div");
+      row.className = "method-row";
+      row.dataset.method = method;
+      row.innerHTML = `
+        <span class="method-row-name">
+          <span class="method-row-dot"></span>
+          ${METHOD_LABELS[method]}
+        </span>
+        <button class="secondary" data-method="${method}">Disable</button>
+      `;
+      row.querySelector("button").addEventListener("click", async () => {
+        if (!confirm(`Disable ${METHOD_LABELS[method]}? You'll need to re-enroll to use it again.`)) {
+          return;
+        }
+        const { status, data } = await postJson("/2fa/disable", { method });
+        if (status === 200) {
+          row.remove();
+          if (!document.querySelector(".method-row")) {
+            document.getElementById("methodsEmpty").classList.remove("hidden");
+          }
+        } else {
+          alert("Error: " + data.error);
+        }
+      });
+      return row;
+    }
+
+    async function loadMethods() {
+      const { status, data } = await getJson("/2fa/status");
+      const list = document.getElementById("methodsList");
+      const empty = document.getElementById("methodsEmpty");
+      list.innerHTML = "";
+      if (status === 200 && data.methods.length) {
+        data.methods.forEach((method) => list.appendChild(renderMethodRow(method)));
+        empty.classList.add("hidden");
+      } else {
+        empty.classList.remove("hidden");
+      }
+    }
+
     (async () => {
+      if (!(await requireAuthOrRedirect())) return;
+
       const { status, data } = await getJson("/dashboard");
       const result = document.getElementById("result");
       if (status === 200) {
         result.textContent = data.message;
-        document.getElementById("disablePanel").style.display = "block";
+        result.classList.add("status-success");
+        document.getElementById("methodsPanel").classList.remove("hidden");
+        loadMethods();
       } else {
         result.textContent = "Access denied (" + status + "): " + data.error + ". Verify a 2FA code first.";
+        result.classList.add("status-error");
       }
     })();
-
-    document.querySelectorAll("#disablePanel button").forEach((btn) => {
-      btn.addEventListener("click", async () => {
-        const method = btn.getAttribute("data-method");
-        const { status, data } = await postJson("/2fa/disable", { method });
-        alert(status === 200 ? method + " disabled." : "Error: " + data.error);
-      });
-    });
 
     document.getElementById("logoutBtn").addEventListener("click", async () => {
       await postJson("/auth/logout", {});

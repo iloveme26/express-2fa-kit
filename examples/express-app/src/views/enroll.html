@@ -2,77 +2,119 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Set up 2FA</title>
+  <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-  <h1>Set up two-factor authentication</h1>
-  <p><a href="/">Home</a> | <a href="/dashboard.html">Dashboard</a></p>
-  <p id="statusLine"></p>
+  <div class="page">
+    <div class="page-header">
+      <div class="logo-mark pop">express</div>
+      <h1>Set up two-factor authentication</h1>
+      <div class="nav-links">
+        <a class="nav-pill" href="/dashboard.html">Dashboard</a>
+        <button class="nav-pill" id="logoutBtn" type="button">Log out</button>
+      </div>
+      <p id="statusLine" class="status-line"></p>
+    </div>
 
-  <section>
-    <h2>Authenticator app (TOTP)</h2>
-    <button id="totpEnrollBtn">Start TOTP enrollment</button>
-    <div id="totpQr"></div>
-    <form id="totpConfirmForm" style="display: none">
-      <input name="code" placeholder="6-digit code" required />
-      <button type="submit">Confirm</button>
-    </form>
-  </section>
+    <div class="card">
+      <h2>Authenticator app (TOTP)</h2>
+      <button id="totpEnrollBtn">Start TOTP enrollment</button>
+      <div id="totpQr" class="qr-wrap"></div>
+      <form id="totpConfirmForm" class="hidden section-gap">
+        <input name="code" placeholder="6-digit code" required />
+        <button type="submit">Confirm</button>
+      </form>
+      <p id="totpResult" class="status-line"></p>
+    </div>
 
-  <section>
-    <h2>SMS</h2>
-    <form id="smsEnrollForm">
-      <input name="phoneNumber" placeholder="+15551234567" required />
-      <button type="submit">Register phone</button>
-    </form>
-    <button id="smsSendBtn" style="display: none">Send code</button>
-    <form id="smsVerifyForm" style="display: none">
-      <input name="code" placeholder="6-digit code" required />
-      <button type="submit">Verify</button>
-    </form>
-  </section>
+    <div class="card">
+      <h2>SMS</h2>
+      <form id="smsEnrollForm">
+        <input name="phoneNumber" placeholder="+15551234567" required />
+        <button type="submit">Register phone</button>
+      </form>
+      <button id="smsSendBtn" class="hidden section-gap secondary">Send code</button>
+      <form id="smsVerifyForm" class="hidden">
+        <input name="code" placeholder="6-digit code" required />
+        <button type="submit">Verify</button>
+      </form>
+      <p id="smsResult" class="status-line"></p>
+    </div>
 
-  <section>
-    <h2>Email</h2>
-    <form id="emailEnrollForm">
-      <input name="emailAddress" placeholder="you@example.com" required />
-      <button type="submit">Register email</button>
-    </form>
-    <button id="emailSendBtn" style="display: none">Send code</button>
-    <form id="emailVerifyForm" style="display: none">
-      <input name="code" placeholder="6-digit code" required />
-      <button type="submit">Verify</button>
-    </form>
-  </section>
+    <div class="card">
+      <h2>Email</h2>
+      <form id="emailEnrollForm">
+        <input name="emailAddress" placeholder="you@example.com" required />
+        <button type="submit">Register email</button>
+      </form>
+      <button id="emailSendBtn" class="hidden section-gap secondary">Send code</button>
+      <form id="emailVerifyForm" class="hidden">
+        <input name="code" placeholder="6-digit code" required />
+        <button type="submit">Verify</button>
+      </form>
+      <p id="emailResult" class="status-line"></p>
+    </div>
 
-  <p><em>SMS/email codes are logged to the server console — no real messages are sent by this example.</em></p>
+    <p class="hint">SMS/email codes are logged to the server console — no real messages are sent by this example.</p>
+  </div>
 
   <script src="/app.js"></script>
   <script>
     async function refreshStatus() {
       const { status, data } = await getJson("/2fa/status");
-      document.getElementById("statusLine").textContent =
-        status === 200
-          ? "Enabled methods: " + (data.methods.length ? data.methods.join(", ") : "none")
-          : "Not logged in — go to Home and log in first.";
+      const el = document.getElementById("statusLine");
+      if (status === 200) {
+        el.textContent = "Enabled methods: " + (data.methods.length ? data.methods.join(", ") : "none");
+        el.classList.remove("status-error");
+      } else {
+        el.textContent = "Not logged in — go to Home and log in first.";
+        el.classList.add("status-error");
+      }
     }
-    refreshStatus();
+
+    function setResult(id, message, ok) {
+      const el = document.getElementById(id);
+      el.textContent = message;
+      el.classList.toggle("status-success", ok);
+      el.classList.toggle("status-error", !ok);
+    }
+
+    (async () => {
+      if (await requireAuthOrRedirect()) {
+        refreshStatus();
+      }
+    })();
+
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+      await postJson("/auth/logout", {});
+      window.location.href = "/";
+    });
 
     document.getElementById("totpEnrollBtn").addEventListener("click", async () => {
       const { status, data } = await postJson("/2fa/totp/enroll", {});
       if (status !== 200) {
-        alert("Error: " + data.error);
+        setResult("totpResult", "Error: " + data.error, false);
         return;
       }
+      document.getElementById("totpQr").classList.remove("hidden");
       document.getElementById("totpQr").innerHTML = `<img src="${data.qrCodeDataUrl}" alt="TOTP QR code" />`;
-      document.getElementById("totpConfirmForm").style.display = "block";
+      document.getElementById("totpConfirmForm").classList.remove("hidden");
+      setResult("totpResult", "Scan the QR code, then enter the 6-digit code below.", true);
     });
 
     document.getElementById("totpConfirmForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const code = new FormData(e.target).get("code");
       const { data } = await postJson("/2fa/totp/confirm", { code });
-      alert(data.valid ? "TOTP confirmed!" : "Invalid code");
+      if (data.valid) {
+        document.getElementById("totpQr").classList.add("hidden");
+        document.getElementById("totpConfirmForm").classList.add("hidden");
+        setResult("totpResult", "✓ TOTP enabled.", true);
+      } else {
+        setResult("totpResult", "Invalid code — try again.", false);
+      }
       refreshStatus();
     });
 
@@ -81,27 +123,33 @@
       const phoneNumber = new FormData(e.target).get("phoneNumber");
       const { status, data } = await postJson("/2fa/sms/enroll", { phoneNumber });
       if (status === 200) {
-        document.getElementById("smsSendBtn").style.display = "inline";
+        document.getElementById("smsSendBtn").classList.remove("hidden");
+        setResult("smsResult", "Phone registered — click Send code.", true);
       } else {
-        alert("Error: " + data.error);
+        setResult("smsResult", "Error: " + data.error, false);
       }
     });
 
     document.getElementById("smsSendBtn").addEventListener("click", async () => {
       const { status, data } = await postJson("/2fa/sms/send", {});
       if (status !== 200) {
-        alert("Error: " + data.error);
+        setResult("smsResult", "Error: " + data.error, false);
         return;
       }
-      document.getElementById("smsVerifyForm").style.display = "block";
-      alert("Code sent — check the server console.");
+      document.getElementById("smsVerifyForm").classList.remove("hidden");
+      setResult("smsResult", "Code sent — check the server console.", true);
     });
 
     document.getElementById("smsVerifyForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const code = new FormData(e.target).get("code");
       const { data } = await postJson("/2fa/verify", { method: "sms", code });
-      alert(data.valid ? "SMS verified!" : "Invalid code: " + data.reason);
+      if (data.valid) {
+        document.getElementById("smsVerifyForm").classList.add("hidden");
+        setResult("smsResult", "✓ SMS verified.", true);
+      } else {
+        setResult("smsResult", "Invalid code: " + data.reason, false);
+      }
       refreshStatus();
     });
 
@@ -110,27 +158,33 @@
       const emailAddress = new FormData(e.target).get("emailAddress");
       const { status, data } = await postJson("/2fa/email/enroll", { emailAddress });
       if (status === 200) {
-        document.getElementById("emailSendBtn").style.display = "inline";
+        document.getElementById("emailSendBtn").classList.remove("hidden");
+        setResult("emailResult", "Email registered — click Send code.", true);
       } else {
-        alert("Error: " + data.error);
+        setResult("emailResult", "Error: " + data.error, false);
       }
     });
 
     document.getElementById("emailSendBtn").addEventListener("click", async () => {
       const { status, data } = await postJson("/2fa/email/send", {});
       if (status !== 200) {
-        alert("Error: " + data.error);
+        setResult("emailResult", "Error: " + data.error, false);
         return;
       }
-      document.getElementById("emailVerifyForm").style.display = "block";
-      alert("Code sent — check the server console.");
+      document.getElementById("emailVerifyForm").classList.remove("hidden");
+      setResult("emailResult", "Code sent — check the server console.", true);
     });
 
     document.getElementById("emailVerifyForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const code = new FormData(e.target).get("code");
       const { data } = await postJson("/2fa/verify", { method: "email", code });
-      alert(data.valid ? "Email verified!" : "Invalid code: " + data.reason);
+      if (data.valid) {
+        document.getElementById("emailVerifyForm").classList.add("hidden");
+        setResult("emailResult", "✓ Email verified.", true);
+      } else {
+        setResult("emailResult", "Invalid code: " + data.reason, false);
+      }
       refreshStatus();
     });
   </script>

@@ -1,0 +1,776 @@
+/* ---------------------------------------------------------------------- */
+/* Design tokens — light theme, soft gradient-blob background            */
+/* ---------------------------------------------------------------------- */
+:root {
+  --bg-base: #fbf8f4;
+  --blob-1: rgba(251, 146, 60, 0.35);
+  --blob-2: rgba(244, 114, 182, 0.22);
+  --blob-3: rgba(96, 165, 250, 0.18);
+
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-bg-hover: rgba(255, 255, 255, 0.88);
+  --glass-border: rgba(17, 17, 17, 0.08);
+  --glass-blur: 24px;
+  --glass-shadow: 0 20px 60px rgba(17, 17, 17, 0.08);
+
+  --text-primary: #16151a;
+  --text-secondary: #5b5b63;
+  --text-muted: #8a8a91;
+
+  --accent: #16151a;
+  --accent-soft: rgba(22, 21, 26, 0.08);
+  --accent-warm: #fb923c;
+  --accent-glow: rgba(251, 146, 60, 0.35);
+
+  --danger: #e11d48;
+  --success: #16a34a;
+
+  --radius-lg: 28px;
+  --radius-md: 16px;
+  --radius-sm: 12px;
+  --radius-pill: 999px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 56px;
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji";
+}
+
+/* ---------------------------------------------------------------------- */
+/* Base                                                                    */
+/* ---------------------------------------------------------------------- */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  background: var(--bg-base);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Soft blurred gradient blobs sitting behind all content */
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(90px);
+  z-index: -1;
+  pointer-events: none;
+}
+
+body::before {
+  width: 620px;
+  height: 620px;
+  top: -220px;
+  right: -160px;
+  background: var(--blob-1);
+}
+
+body::after {
+  width: 720px;
+  height: 720px;
+  bottom: -280px;
+  left: -200px;
+  background: radial-gradient(circle at center, var(--blob-2), var(--blob-3) 70%, transparent 100%);
+}
+
+.page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: var(--space-7) var(--space-5);
+  position: relative;
+}
+
+.page-header {
+  margin-bottom: var(--space-6);
+}
+
+.page-center {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-6) var(--space-5);
+}
+
+h1 {
+  font-size: 2.1rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 var(--space-2);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Landing-page logo mark — pops in (via .pop, added by JS) after the      */
+/* headline finishes typing                                               */
+/* ---------------------------------------------------------------------- */
+.logo-mark {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+  margin-bottom: var(--space-5);
+  opacity: 0;
+  transform: scale(0.4) rotate(-12deg);
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+}
+
+.logo-mark.pop {
+  animation: logo-pop 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards, logo-float 4s ease-in-out 0.7s infinite;
+}
+
+@keyframes logo-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.4) rotate(-12deg);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(1.12) rotate(3deg);
+  }
+  78% {
+    transform: scale(0.97) rotate(-1deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes logo-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+/* Typing headline + blinking cursor                                       */
+/* ---------------------------------------------------------------------- */
+.hero h1.typing::after {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 0.85em;
+  margin-left: 4px;
+  background: var(--text-primary);
+  vertical-align: -0.1em;
+  animation: blink-cursor 0.85s step-end infinite;
+}
+
+@keyframes blink-cursor {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  50.01%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-mark,
+  .logo-mark.pop {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+
+  .hero h1.typing::after {
+    animation: none;
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+/* Back-to-home link (auth pages)                                          */
+/* ---------------------------------------------------------------------- */
+.back-home {
+  position: fixed;
+  top: var(--space-5);
+  left: var(--space-5);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-decoration: none;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid var(--glass-border);
+  transition: color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+}
+
+.back-home:hover {
+  color: var(--text-primary);
+  background: #fff;
+  transform: translateX(-2px);
+}
+
+.back-home svg {
+  flex-shrink: 0;
+}
+
+.hero h1 {
+  font-size: clamp(2.2rem, 5vw, 3.4rem);
+  max-width: 14ch;
+  margin: 0 auto var(--space-3);
+}
+
+h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 var(--space-4);
+  color: var(--text-primary);
+}
+
+p {
+  color: var(--text-secondary);
+  margin: 0 0 var(--space-4);
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  font-size: 1.05rem;
+}
+
+.hero .subtitle {
+  font-size: 1.15rem;
+  margin-bottom: var(--space-6);
+}
+
+.hero .subtitle,
+.hero .button-group {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.hero .subtitle.reveal,
+.hero .button-group.reveal {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero .subtitle,
+  .hero .button-group {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+.hint {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Nav links — pill-style                                                  */
+/* ---------------------------------------------------------------------- */
+.nav-links {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* .nav-pill covers both <a> links and a plain <button> (e.g. Log out), so both
+   sit visually identical in the row regardless of tag. */
+.nav-links .nav-pill {
+  min-height: 0;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid var(--glass-border);
+  transition: color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+}
+
+.nav-links .nav-pill:hover {
+  color: var(--text-primary);
+  background: #fff;
+  transform: translateY(-1px);
+  box-shadow: none;
+  filter: none;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Glass card                                                              */
+/* ---------------------------------------------------------------------- */
+.card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--glass-shadow);
+  padding: var(--space-6);
+  margin-bottom: var(--space-5);
+  transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  background: var(--glass-bg-hover);
+  box-shadow: 0 24px 70px rgba(17, 17, 17, 0.1);
+}
+
+.card-narrow {
+  max-width: 420px;
+  width: 100%;
+  margin: 0 auto;
+  text-align: left;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Forms                                                                   */
+/* ---------------------------------------------------------------------- */
+form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: stretch;
+}
+
+form.form-stacked {
+  flex-direction: column;
+}
+
+/* In a column layout, flex-basis affects height, not width — override the
+   horizontal-form sizing so stacked inputs/buttons just take their natural height. */
+form.form-stacked input,
+form.form-stacked button {
+  flex: none;
+  width: 100%;
+}
+
+input {
+  flex: 1 1 160px;
+  min-height: 46px;
+  padding: 0 var(--space-4);
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: var(--text-primary);
+  background: #fff;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+input::placeholder {
+  color: var(--text-muted);
+}
+
+input:hover {
+  border-color: rgba(17, 17, 17, 0.16);
+}
+
+input:focus {
+  border-color: var(--accent-warm);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Buttons                                                                 */
+/* ---------------------------------------------------------------------- */
+button {
+  min-height: 46px;
+  padding: 0 var(--space-5);
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: #fff;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+button:hover {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 10px 28px rgba(17, 17, 17, 0.22);
+  filter: brightness(1.15);
+}
+
+button:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 4px 14px rgba(17, 17, 17, 0.18);
+}
+
+button:focus-visible {
+  outline: 2px solid var(--accent-warm);
+  outline-offset: 2px;
+}
+
+/* Anchor-as-button (landing page CTAs) — same visual language as <button>, without
+   nesting a button element inside an anchor. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 var(--space-5);
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: #fff;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 10px 28px rgba(17, 17, 17, 0.22);
+  filter: brightness(1.15);
+}
+
+.btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.btn.secondary {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--glass-border);
+}
+
+.btn.secondary:hover {
+  background: #fff;
+  box-shadow: 0 10px 26px rgba(17, 17, 17, 0.1);
+  filter: none;
+}
+
+.btn.large {
+  padding: 0 var(--space-6);
+  min-height: 52px;
+  font-size: 1rem;
+}
+
+button.secondary {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--glass-border);
+}
+
+button.secondary:hover {
+  background: #fff;
+  box-shadow: 0 10px 26px rgba(17, 17, 17, 0.1);
+  filter: none;
+}
+
+button.large {
+  padding: 0 var(--space-6);
+  min-height: 52px;
+  font-size: 1rem;
+}
+
+.button-group {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Status / feedback text                                                  */
+/* ---------------------------------------------------------------------- */
+.status-line {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  padding: var(--space-3) 0;
+}
+
+.status-success {
+  color: var(--success);
+}
+
+.status-error {
+  color: var(--danger);
+}
+
+/* ---------------------------------------------------------------------- */
+/* QR code                                                                 */
+/* ---------------------------------------------------------------------- */
+.qr-wrap img {
+  display: block;
+  margin: var(--space-4) auto var(--space-6);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-border);
+  padding: var(--space-3);
+  background: #fff;
+  box-shadow: 0 24px 48px -12px rgba(17, 17, 17, 0.28), 0 4px 12px rgba(17, 17, 17, 0.1);
+  max-width: 220px;
+  width: 100%;
+}
+
+/* Space above the standalone "Send code" buttons, same treatment as the QR code,
+   so they don't sit flush against the enroll form above them. */
+#smsSendBtn,
+#emailSendBtn {
+  margin-top: var(--space-4);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Enrolled-methods list (dashboard)                                       */
+/* ---------------------------------------------------------------------- */
+.method-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.method-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.method-row:first-child {
+  padding-top: 0;
+}
+
+.method-row-name {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.method-row-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  flex-shrink: 0;
+}
+
+.method-row button {
+  flex-shrink: 0;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Footer link under a card                                                */
+/* ---------------------------------------------------------------------- */
+.card-footer {
+  margin-top: var(--space-4);
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.card-footer a {
+  color: var(--text-primary);
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.card-footer a:hover {
+  border-color: var(--text-primary);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Password field with show/hide toggle                                    */
+/* ---------------------------------------------------------------------- */
+.password-field {
+  position: relative;
+  width: 100%;
+}
+
+.password-field input {
+  width: 100%;
+  padding-right: 46px;
+}
+
+/* .password-field .password-toggle (two classes) intentionally outranks the
+   `form.form-stacked button { width: 100% }` rule, which would otherwise stretch
+   this absolutely-positioned button across the whole input and block clicks on it. */
+.password-field .password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 5px;
+  left: auto;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  min-height: 0;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.password-field .password-toggle:hover {
+  color: var(--text-primary);
+  background: rgba(17, 17, 17, 0.06);
+  transform: translateY(-50%) scale(1.05);
+  box-shadow: none;
+  filter: none;
+}
+
+.password-field .password-toggle:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Password strength meter                                                 */
+/* ---------------------------------------------------------------------- */
+.password-meter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.password-meter-track {
+  flex: 1;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: rgba(17, 17, 17, 0.08);
+  overflow: hidden;
+}
+
+.password-meter-bar {
+  height: 100%;
+  width: 0%;
+  border-radius: var(--radius-pill);
+  background: var(--danger);
+  transition: width 0.25s ease, background-color 0.25s ease;
+}
+
+.password-meter-bar.weak {
+  background: var(--danger);
+}
+
+.password-meter-bar.fair {
+  background: #f59e0b;
+}
+
+.password-meter-bar.good {
+  background: #84cc16;
+}
+
+.password-meter-bar.strong {
+  background: var(--success);
+}
+
+.password-meter-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  min-width: 48px;
+  text-align: right;
+  color: var(--text-muted);
+}
+
+.password-meter-label.weak {
+  color: var(--danger);
+}
+
+.password-meter-label.fair {
+  color: #d97706;
+}
+
+.password-meter-label.good {
+  color: #65a30d;
+}
+
+.password-meter-label.strong {
+  color: var(--success);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Utilities                                                               */
+/* ---------------------------------------------------------------------- */
+.hidden {
+  display: none !important;
+}
+
+.section-gap {
+  margin-bottom: var(--space-5);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Responsive                                                              */
+/* ---------------------------------------------------------------------- */
+@media (max-width: 640px) {
+  .page {
+    padding: var(--space-6) var(--space-4);
+  }
+
+  h1 {
+    font-size: 1.6rem;
+  }
+
+  .card {
+    padding: var(--space-5);
+    border-radius: var(--radius-md);
+  }
+
+  form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  input,
+  button {
+    width: 100%;
+  }
+
+  .button-group {
+    flex-direction: column;
+  }
+
+  .method-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+}
