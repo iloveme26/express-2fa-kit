@@ -1,29 +1,28 @@
 /* ---------------------------------------------------------------------- */
-/* Design tokens — light theme, soft gradient-blob background            */
+/* Design tokens — dark theme, glowing aurora-blob background             */
 /* ---------------------------------------------------------------------- */
 :root {
-  --bg-base: #fbf8f4;
-  --blob-1: rgba(251, 146, 60, 0.35);
-  --blob-2: rgba(244, 114, 182, 0.22);
-  --blob-3: rgba(96, 165, 250, 0.18);
+  --bg-base: #08070d;
+  --blob-1: rgba(139, 92, 246, 0.38);
+  --blob-2: rgba(56, 189, 248, 0.24);
+  --blob-3: rgba(232, 121, 249, 0.22);
 
-  --glass-bg: rgba(255, 255, 255, 0.72);
-  --glass-bg-hover: rgba(255, 255, 255, 0.88);
-  --glass-border: rgba(17, 17, 17, 0.08);
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-bg-hover: rgba(255, 255, 255, 0.08);
+  --glass-border: rgba(255, 255, 255, 0.1);
   --glass-blur: 24px;
-  --glass-shadow: 0 20px 60px rgba(17, 17, 17, 0.08);
+  --glass-shadow: 0 30px 70px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
 
-  --text-primary: #16151a;
-  --text-secondary: #5b5b63;
-  --text-muted: #8a8a91;
+  --text-primary: #f5f4f8;
+  --text-secondary: rgba(245, 244, 248, 0.64);
+  --text-muted: rgba(245, 244, 248, 0.4);
 
-  --accent: #16151a;
-  --accent-soft: rgba(22, 21, 26, 0.08);
-  --accent-warm: #fb923c;
-  --accent-glow: rgba(251, 146, 60, 0.35);
+  --accent-from: #6366f1;
+  --accent-to: #d946ef;
+  --accent-glow: rgba(139, 92, 246, 0.5);
 
-  --danger: #e11d48;
-  --success: #16a34a;
+  --danger: #fb7185;
+  --success: #4ade80;
 
   --radius-lg: 28px;
   --radius-md: 16px;
@@ -66,13 +65,13 @@ body {
   overflow-x: hidden;
 }
 
-/* Soft blurred gradient blobs sitting behind all content */
+/* Soft blurred glow blobs sitting behind all content — aurora effect on dark bg */
 body::before,
 body::after {
   content: "";
   position: fixed;
   border-radius: 50%;
-  filter: blur(90px);
+  filter: blur(100px);
   z-index: -1;
   pointer-events: none;
 }
@@ -135,6 +134,7 @@ h1 {
   transform: scale(0.4) rotate(-12deg);
   will-change: transform, opacity;
   backface-visibility: hidden;
+  text-shadow: 0 0 24px rgba(168, 139, 250, 0.45);
 }
 
 .logo-mark.pop {
@@ -224,14 +224,14 @@ h1 {
   text-decoration: none;
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-pill);
-  background: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.06);
   border: 1px solid var(--glass-border);
   transition: color 0.15s ease, background 0.15s ease, transform 0.15s ease;
 }
 
 .back-home:hover {
   color: var(--text-primary);
-  background: #fff;
+  background: rgba(255, 255, 255, 0.12);
   transform: translateX(-2px);
 }
 
@@ -315,14 +315,14 @@ p {
   font-weight: 600;
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-pill);
-  background: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.06);
   border: 1px solid var(--glass-border);
   transition: color 0.15s ease, background 0.15s ease, transform 0.15s ease;
 }
 
 .nav-links .nav-pill:hover {
   color: var(--text-primary);
-  background: #fff;
+  background: rgba(255, 255, 255, 0.12);
   transform: translateY(-1px);
   box-shadow: none;
   filter: none;
@@ -345,7 +345,8 @@ p {
 
 .card:hover {
   background: var(--glass-bg-hover);
-  box-shadow: 0 24px 70px rgba(17, 17, 17, 0.1);
+  box-shadow: 0 34px 80px rgba(0, 0, 0, 0.6), 0 0 50px rgba(139, 92, 246, 0.1),
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset;
 }
 
 .card-narrow {
@@ -384,11 +385,11 @@ input {
   font-size: 0.95rem;
   font-family: inherit;
   color: var(--text-primary);
-  background: #fff;
+  background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-sm);
   outline: none;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
 
 input::placeholder {
@@ -396,12 +397,14 @@ input::placeholder {
 }
 
 input:hover {
-  border-color: rgba(17, 17, 17, 0.16);
+  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 input:focus {
-  border-color: var(--accent-warm);
+  border-color: var(--accent-from);
   box-shadow: 0 0 0 3px var(--accent-glow);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -414,27 +417,28 @@ button {
   font-weight: 600;
   font-family: inherit;
   color: #fff;
-  background: var(--accent);
+  background: linear-gradient(135deg, var(--accent-from), var(--accent-to));
   border: none;
   border-radius: var(--radius-pill);
   cursor: pointer;
   white-space: nowrap;
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
   transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
 }
 
 button:hover {
   transform: translateY(-1px) scale(1.02);
-  box-shadow: 0 10px 28px rgba(17, 17, 17, 0.22);
-  filter: brightness(1.15);
+  box-shadow: 0 12px 34px rgba(99, 102, 241, 0.5), 0 0 24px rgba(217, 70, 239, 0.3);
+  filter: brightness(1.12);
 }
 
 button:active {
   transform: translateY(0) scale(0.98);
-  box-shadow: 0 4px 14px rgba(17, 17, 17, 0.18);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
 }
 
 button:focus-visible {
-  outline: 2px solid var(--accent-warm);
+  outline: 2px solid var(--accent-from);
   outline-offset: 2px;
 }
 
@@ -450,19 +454,20 @@ button:focus-visible {
   font-weight: 600;
   font-family: inherit;
   color: #fff;
-  background: var(--accent);
+  background: linear-gradient(135deg, var(--accent-from), var(--accent-to));
   border: none;
   border-radius: var(--radius-pill);
   cursor: pointer;
   white-space: nowrap;
   text-decoration: none;
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
   transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
 }
 
 .btn:hover {
   transform: translateY(-1px) scale(1.02);
-  box-shadow: 0 10px 28px rgba(17, 17, 17, 0.22);
-  filter: brightness(1.15);
+  box-shadow: 0 12px 34px rgba(99, 102, 241, 0.5), 0 0 24px rgba(217, 70, 239, 0.3);
+  filter: brightness(1.12);
 }
 
 .btn:active {
@@ -471,13 +476,14 @@ button:focus-visible {
 
 .btn.secondary {
   color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.06);
   border: 1px solid var(--glass-border);
+  box-shadow: none;
 }
 
 .btn.secondary:hover {
-  background: #fff;
-  box-shadow: 0 10px 26px rgba(17, 17, 17, 0.1);
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 30px rgba(255, 255, 255, 0.06);
   filter: none;
 }
 
@@ -489,13 +495,14 @@ button:focus-visible {
 
 button.secondary {
   color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.06);
   border: 1px solid var(--glass-border);
+  box-shadow: none;
 }
 
 button.secondary:hover {
-  background: #fff;
-  box-shadow: 0 10px 26px rgba(17, 17, 17, 0.1);
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 30px rgba(255, 255, 255, 0.06);
   filter: none;
 }
 
@@ -530,7 +537,9 @@ button.large {
 }
 
 /* ---------------------------------------------------------------------- */
-/* QR code                                                                 */
+/* QR code — kept on a white backing (required for scannability), with a   */
+/* glowing halo so it stands out against the dark card instead of a       */
+/* shadow that would be invisible on a dark background                    */
 /* ---------------------------------------------------------------------- */
 .qr-wrap img {
   display: block;
@@ -539,7 +548,7 @@ button.large {
   border: 1px solid var(--glass-border);
   padding: var(--space-3);
   background: #fff;
-  box-shadow: 0 24px 48px -12px rgba(17, 17, 17, 0.28), 0 4px 12px rgba(17, 17, 17, 0.1);
+  box-shadow: 0 0 60px rgba(255, 255, 255, 0.15), 0 30px 60px rgba(0, 0, 0, 0.65);
   max-width: 220px;
   width: 100%;
 }
@@ -585,6 +594,7 @@ button.large {
   height: 8px;
   border-radius: 50%;
   background: var(--success);
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.7);
   flex-shrink: 0;
 }
 
@@ -647,11 +657,12 @@ button.large {
   border-radius: var(--radius-sm);
   color: var(--text-muted);
   cursor: pointer;
+  box-shadow: none;
 }
 
 .password-field .password-toggle:hover {
   color: var(--text-primary);
-  background: rgba(17, 17, 17, 0.06);
+  background: rgba(255, 255, 255, 0.08);
   transform: translateY(-50%) scale(1.05);
   box-shadow: none;
   filter: none;
@@ -674,7 +685,7 @@ button.large {
   flex: 1;
   height: 6px;
   border-radius: var(--radius-pill);
-  background: rgba(17, 17, 17, 0.08);
+  background: rgba(255, 255, 255, 0.08);
   overflow: hidden;
 }
 
@@ -691,11 +702,11 @@ button.large {
 }
 
 .password-meter-bar.fair {
-  background: #f59e0b;
+  background: #fbbf24;
 }
 
 .password-meter-bar.good {
-  background: #84cc16;
+  background: #a3e635;
 }
 
 .password-meter-bar.strong {
@@ -715,11 +726,11 @@ button.large {
 }
 
 .password-meter-label.fair {
-  color: #d97706;
+  color: #fbbf24;
 }
 
 .password-meter-label.good {
-  color: #65a30d;
+  color: #a3e635;
 }
 
 .password-meter-label.strong {
